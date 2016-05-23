@@ -51,16 +51,17 @@ my $r_bin = $r_bn->to_bin;
 
 # base64 encode sha224(r)
 # note: sha224 is not supported by Perl. All exernal openssl.
-umask 0400;
-open FILE, "> $ENV{HOME}/.dbpass.bin" or die "Can not create $ENV{HOME}/.dbpass.bin";
+#umask 0600;
+my $filename = "$ENV{HOME}/.dbpass.bin";
+open FILE, "+> $filename" or die "Can not create $filename";
 binmode FILE;
 print FILE $r_bin;
 close FILE;
-my $r2 = `openssl sha224 -binary $ENV{HOME}/.dbpass.bin`;
+my $r2 = `openssl sha224 -binary $filename`;
 $r2 = encode_base64($r2);
 $r2 = substr($r2, 0, 30);
 say "r2 ", $r2 if $verbose;
-unlink "$ENV{HOME}/.dbpass.bin";
+unlink "$filename";
 
 # sanitize password
 for (my $i = 1; $i <= 30; $i++)
@@ -101,5 +102,5 @@ substr($r2, 2, 1) = '0' if substr($r2, 2, 1) !~/^[[:digit:]]$/;
 print $r2;
 
 sub END {
-    unlink "$ENV{HOME}/.dbpass.bin";
+    unlink "$filename";
 }
