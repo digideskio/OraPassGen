@@ -46,6 +46,14 @@ my $ctx = Crypt::OpenSSL::Bignum::CTX->new();
 my $r_bn = $a_bn->mod_exp($p_bn, $n_bn, $ctx);
 say "r ", $r_bn->to_decimal() if $verbose;
 
+# just burn some CPU time
+# compute r = a ^ r mod n
+for (my $i = 0; $i < 100; $i++)
+{
+    my $r1_bn = $r_bn->copy;
+    $r_bn = $a_bn->mod_exp($r1_bn, $n_bn, $ctx);
+}
+
 # compute sha(r)
 my $r_bin = $r_bn->to_bin;
 
@@ -99,7 +107,7 @@ substr($r2, 1, 1) = chr(ord('a') + ord(substr($r2, 1, 1)) - ord('A')) if substr(
     # 	r2_m_char[2] = '0';    
 substr($r2, 2, 1) = '0' if substr($r2, 2, 1) !~/^[[:digit:]]$/;
 
-print $r2;
+print $r2 . "\n";
 
 sub END {
     unlink "$filename";
